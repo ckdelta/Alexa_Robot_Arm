@@ -109,7 +109,7 @@ def Welcome_response(intent, session):
 			reprompt_text = "Refrigerator Status:" \
                     "You have one" + Item_takein + "in your refrigerator."
 
-	# Send response back to the Alexa Voice Skill
+	# Send response back to ASK
     session_attributes = create_attributes(Item_takein)
     return build_response(session_attributes, build_speechlet_response(card_title, speech_output, reprompt_text, should_end_session))
 
@@ -125,7 +125,7 @@ def In_response(intent, session):
     should_end_session = False
     Item_takein = ""
 
-    #Item from slots
+    # Item from slots
     if 'slots' in intent:
         if 'Item_takein' in intent['slots']:
             if 'value' in intent['slots']['Item_takein']:
@@ -134,7 +134,7 @@ def In_response(intent, session):
     if Item_takein == "":
         print("Warning: there is no item to take in.")
 
-    #Build the speech
+    # Build the speech
     speech_output = "Robot Arm is taking in " + Item_takein + ", Please wait. "
     reprompt_text =  Item_takein + "is putting in stock!"
 
@@ -148,13 +148,187 @@ def In_response(intent, session):
                                                     "\"Item_stock\": \"" + Item_takein + "\" "\
                                                 "} "\
                                     ", \"reported\": {"\
-                                                    "\"Takein\": \"OFF\" "\
+                                                    "\"Takein\": \"OFF\", "\
+                                                    "\"Takeout\": \"OFF\" "\
                                                 "} "\
                                     "} "\
                     "}"
     myDeviceShadow.shadowUpdate(myJSONPayload, customCallback, 5)
     myAWSIoTMQTTShadowClient.disconnect()
 
-    # Send response back to the Alexa Voice Skill
+    # Send response back to ASK
+    session_attributes = create_attributes(Item_takein)
+    return build_response(session_attributes, build_speechlet_response(card_title, speech_output, reprompt_text, should_end_session))
+
+
+def Out_response(intent, session):
+    # Connect to AWS IoT Shadow
+    myAWSIoTMQTTShadowClient.connect()
+    myDeviceShadow = myAWSIoTMQTTShadowClient.createShadowHandlerWithName("pi_arm", True)
+    customCallback = ""
+
+    # Set other defaults
+    card_title = "Item_takeout"
+    should_end_session = False
+    Item_takein=""
+
+    # Item taking out from slots
+    if 'slots' in intent:
+        if 'Item_takein' in intent['slots']:
+            if 'value' in intent['slots']['Item_takein']:
+                Item_takeout = intent['slots']['Item_takein']['value'].upper()
+
+    # Item stored in attributes
+    if 'attributes' in session:
+        if 'Item_stock' in session['attributes'] is not "":
+            Item_takein = session['attributes']['Item_stock']
+
+    # Check if target is in stock and set voice
+    if Item_takeout == Item_takein:
+        # Speech
+        speech_output = "Robot Arm is taking out " + Item_takeout + ", Please wait. "
+        reprompt_text =  Item_takeout + "is getting out of stock!"
+        # Clear stock, !!Need to change to list remove element
+        Item_takein=""
+        # Publish to AWS IoT Shadow
+        myJSONPayload = "{ \"state\" : {"\
+                                        "\"desired\": {"\
+                                                        "\"Takein\": \"OFF\", "\
+                                                        "\"Takeout\": \"ON\", "\
+                                                        "\"Massage\": \"OFF\", "\
+                                                        "\"Test\": \"OFF\", "\
+                                                        "\"Item_stock\": \"" + Item_takein + "\" "\
+                                                    "} "\
+                                        ", \"reported\": {"\
+                                                        "\"Takein\": \"OFF\", "\
+                                                        "\"Takeout\": \"OFF\" "\
+                                                    "} "\
+                                        "} "\
+                        "}"
+        myDeviceShadow.shadowUpdate(myJSONPayload, customCallback, 5)
+        myAWSIoTMQTTShadowClient.disconnect()
+    else:
+        # Speech
+        speech_output = "There is no " + Item_takeout + "in stock. " \
+                        "Please check inventory status and change your command."
+        reprompt_text =  Item_takeout + "is not in stock!"
+
+    # Send response back to ASK
+    session_attributes = create_attributes(Item_takein)
+    return build_response(session_attributes, build_speechlet_response(card_title, speech_output, reprompt_text, should_end_session))
+
+def Massage_response(intent, session):
+    # Connect to AWS IoT Shadow
+    myAWSIoTMQTTShadowClient.connect()
+    myDeviceShadow = myAWSIoTMQTTShadowClient.createShadowHandlerWithName("pi_arm", True)
+    customCallback = ""
+
+    # Set other defaults
+    card_title = "Massage"
+    should_end_session = False
+    Item_takein=""
+
+    # Item stored in attributes
+    if 'attributes' in session:
+        if 'Item_stock' in session['attributes'] is not "":
+            Item_takein = session['attributes']['Item_stock']
+
+    # Speech
+    speech_output = "Robot Arm is massaging, enjoy. "
+    reprompt_text =  "Enjoy your massaging!"
+
+    # Publish to AWS IoT Shadow
+    myJSONPayload = "{ \"state\" : {"\
+                                    "\"desired\": {"\
+                                                    "\"Takein\": \"OFF\", "\
+                                                    "\"Takeout\": \"OFF\", "\
+                                                    "\"Massage\": \"ON\", "\
+                                                    "\"Test\": \"OFF\", "\
+                                                    "\"Item_stock\": \"" + Item_takein + "\" "\
+                                                "} "\
+                                    ", \"reported\": {"\
+                                                    "\"Massage\": \"OFF\" "\
+                                                "} "\
+                                    "} "\
+                    "}"
+    myDeviceShadow.shadowUpdate(myJSONPayload, customCallback, 5)
+    myAWSIoTMQTTShadowClient.disconnect()
+
+    # Send response back to ASK
+    session_attributes = create_attributes(Item_takein)
+    return build_response(session_attributes, build_speechlet_response(card_title, speech_output, reprompt_text, should_end_session))
+
+def Function_response(intent, session):
+    # Connect to AWS IoT Shadow
+    myAWSIoTMQTTShadowClient.connect()
+    myDeviceShadow = myAWSIoTMQTTShadowClient.createShadowHandlerWithName("pi_arm", True)
+    customCallback = ""
+
+    # Set other defaults
+    card_title = "FunctionTest"
+    should_end_session = False
+    Item_takein=""
+
+    # Item stored in attributes
+    if 'attributes' in session:
+        if 'Item_stock' in session['attributes'] is not "":
+            Item_takein = session['attributes']['Item_stock']
+
+    # Speech
+    speech_output = "Robot Arm is self testing mode. "
+    reprompt_text =  "Robot Arm is under testing"
+
+    # Publish to AWS IoT Shadow
+    myJSONPayload = "{ \"state\" : {"\
+                                    "\"desired\": {"\
+                                                    "\"Takein\": \"OFF\", "\
+                                                    "\"Takeout\": \"OFF\", "\
+                                                    "\"Massage\": \"OFF\", "\
+                                                    "\"Test\": \"ON\", "\
+                                                    "\"Item_stock\": \"" + Item_takein + "\" "\
+                                                "} "\
+                                    ", \"reported\": {"\
+                                                    "\"Test\": \"OFF\" "\
+                                                "} "\
+                                    "} "\
+                    "}"
+    myDeviceShadow.shadowUpdate(myJSONPayload, customCallback, 5)
+    myAWSIoTMQTTShadowClient.disconnect()
+
+    # Send response back to ASK
+    session_attributes = create_attributes(Item_takein)
+    return build_response(session_attributes, build_speechlet_response(card_title, speech_output, reprompt_text, should_end_session))
+
+
+def Stop_response():
+    # Connect to AWS IoT Shadow
+    myAWSIoTMQTTShadowClient.connect()
+    myDeviceShadow = myAWSIoTMQTTShadowClient.createShadowHandlerWithName("pi_arm", True)
+    customCallback = ""
+
+    # Set other defaults
+    card_title = "Stop"
+    should_end_session = True
+    Item_takein=""
+
+    #Speech
+    speech_output = "Robot Arm is going to power off."
+    reprompt_text =  "Powering off."
+
+    # Publish to AWS IoT Shadow
+    myJSONPayload = "{ \"state\" : {"\
+                                    "\"desired\": {"\
+                                                    "\"Takein\": \"OFF\", "\
+                                                    "\"Takeout\": \"OFF\", "\
+                                                    "\"Massage\": \"OFF\", "\
+                                                    "\"Test\": \"OFF\", "\
+                                                    "\"Item_stock\": \"" + Item_takein + "\" "\
+                                                "} "\
+                                    "} "\
+                    "}"
+    myDeviceShadow.shadowUpdate(myJSONPayload, customCallback, 5)
+    myAWSIoTMQTTShadowClient.disconnect()
+
+    # Send response back to ASK
     session_attributes = create_attributes(Item_takein)
     return build_response(session_attributes, build_speechlet_response(card_title, speech_output, reprompt_text, should_end_session))
