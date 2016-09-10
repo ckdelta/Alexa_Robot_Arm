@@ -6,7 +6,7 @@ import json
 
 #Setup Login keys
 host = "a2bvtjvd2b5lcg.iot.us-east-1.amazonaws.com"
-rootCAPath =  "aws-iot-rootCA.crt""
+rootCAPath =  "aws-iot-rootCA.crt"
 certificatePath = "cert.pem"
 privateKeyPath = "privkey.pem"
 shadowClient = "pi_arm"
@@ -80,3 +80,81 @@ def intent_req(request, session):
 def session_ended_req(request, session):
     print("SessionEndedRequest ID: "+ request['requestId'] + ", session ID: " + session['sessionId'])
     return Stop_response()
+
+#-----------------------------------Intent Request Parsing--------------------#
+def Welcome_response(intent, session):
+    # Connect to AWS IoT Shadow
+    myAWSIoTMQTTShadowClient.connect()
+    myDeviceShadow = myAWSIoTMQTTShadowClient.createShadowHandlerWithName("pi_arm", True)
+    customCallback = ""
+
+	# Init Speech
+	speech_output = "Welcome to robot arm. " \
+                    "You have nothing in stock."   \
+                    "Please put in or ask for help."
+    reprompt_text = "Please put in new items. "
+
+    # Set other parameters
+    card_title = "Welcome"
+    should_end_session = False
+    Item_takein=""
+
+	# Get Session Attributes
+    if 'attributes' in session:
+        if 'Item_takein' in session['attributes'] is not "":
+            Item_takein = session['attributes']['Item_takein']
+			#Speech
+			speech_output = "Welcome to robot arm, " \
+                    "You have one" + Item_takein + "in your refrigerator."
+			reprompt_text = "Refrigerator Status:" \
+                    "You have one" + Item_takein + "in your refrigerator."
+
+	# Send response back to the Alexa Voice Skill
+    session_attributes = create_attributes(Item_takein)
+    return build_response(session_attributes, build_speechlet_response(card_title, speech_output, reprompt_text, should_end_session))
+
+
+def In_response(intent, session):
+    # Connect to AWS IoT Shadow
+    myAWSIoTMQTTShadowClient.connect()
+    myDeviceShadow = myAWSIoTMQTTShadowClient.createShadowHandlerWithName("pi_arm", True)
+    customCallback = ""
+
+    # Set other defaults
+    card_title = "Item_takein"
+    should_end_session = False
+    Item_takein = ""
+
+    #Item from slots
+    if 'slots' in intent:
+        if 'Item_takein' in intent['slots']:
+            if 'value' in intent['slots']['Item_takein']:
+                Item_takein = intent['slots']['Item_takein']['value'].upper()
+
+    if Item_takein == "":
+        print("Warning: there is no item to take in.")
+
+    #Build the speech
+    speech_output = "Robot Arm is taking in " + Item_takein + ", Please wait. "
+    reprompt_text =  Item_takein + "is putting in stock!"
+
+    # Publish to AWS IoT Shadow
+    myJSONPayload = "{ \"state\" : {"\
+                                    "\"desired\": {"\
+                                                    "\"Takein\": \"ON\", "\
+                                                    "\"Takeout\": \"OFF\", "\
+                                                    "\"Massage\": \"OFF\", "\
+                                                    "\"Test\": \"OFF\", "\
+                                                    "\"Item_stock\": \"" + Item_takein + "\" "\
+                                                "} "\
+                                    ", \"reported\": {"\
+                                                    "\"Takein\": \"OFF\" "\
+                                                "} "\
+                                    "} "\
+                    "}"
+    myDeviceShadow.shadowUpdate(myJSONPayload, customCallback, 5)
+    myAWSIoTMQTTShadowClient.disconnect()
+
+    # Send response back to the Alexa Voice Skill
+    session_attributes = create_attributes(Item_takein)
+    return build_response(session_attributes, build_speechlet_response(card_title, speech_output, reprompt_text, should_end_session))
