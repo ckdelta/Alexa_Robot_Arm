@@ -94,7 +94,7 @@ def Welcome_response(intent, session):
 	# Init Speech
     speech_output = "Welcome to robot arm. " \
                     "You have nothing in stock."   \
-                    "Please put in or ask for help."
+                    "Please stock up or ask for help."
     reprompt_text = "Please put in new items. "
 
     # Set other parameters
@@ -130,9 +130,9 @@ def In_response(intent, session):
 
     # Item from slots
     if 'slots' in intent:
-        if 'Item_takein' in intent['slots']:
-            if 'value' in intent['slots']['Item_takein']:
-                Item_takein = intent['slots']['Item_takein']['value'].upper()
+        if 'Item' in intent['slots']:
+            if 'value' in intent['slots']['Item']:
+                Item_takein = intent['slots']['Item']['value'].upper()
 
     if Item_takein == "":
         print("Warning: there is no item to take in!!!")
@@ -179,9 +179,9 @@ def Out_response(intent, session):
 
     # Item taking out from slots
     if 'slots' in intent:
-        if 'Item_takeout' in intent['slots']:
-            if 'value' in intent['slots']['Item_takeout']:
-                Item_takeout = intent['slots']['Item_takeout']['value'].upper()
+        if 'Item' in intent['slots']:
+            if 'value' in intent['slots']['Item']:
+                Item_takeout = intent['slots']['Item']['value'].upper()
 
     # Item stored in attributes
     if 'attributes' in session:
