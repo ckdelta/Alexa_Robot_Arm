@@ -45,6 +45,7 @@ def perform_massage_sequence():
         MoveArm(0.9, [1, 0, 0])  # Grip close
         time.sleep(0.5)
         i = i + 1
+    MoveArm(0.8, [2, 0, 0])  # Grip open
 
 def peform_recovery_sequence():
     MoveArm(2.5, [64, 0, 0])  # Shoulder up
@@ -80,6 +81,9 @@ def peform_recovery_sequence():
             MoveArm(0.9, [1, 0, 0])  # Grip close
             time.sleep(0.5)
             i = i + 1
+        MoveArm(0.8, [2, 0, 0])  # Grip open
+        # if time: perform salutation?
+
 
     if comm == "massage_sequence":
         i = 0
@@ -128,6 +132,9 @@ def peform_recovery_sequence():
     if comm == "shl_up_2":
         MoveArm(2.5, [64, 0, 0])  # Shoulder up
 
+    if comm == "shl_up_6":
+        MoveArm(6, [64, 0, 0])  # Shoulder up
+
     if comm == "shl_down":
         MoveArm(0.2, [128, 0, 0])  # Shoulder down
 
@@ -145,6 +152,12 @@ def peform_recovery_sequence():
 
     if comm == "wrist_down_0":
         MoveArm(0.2, [8, 0, 0])  # Wrist down
+
+    if comm == "wrist_up_3":
+        MoveArm(3, [4, 0, 0])  # Wrist up
+
+    if comm == "wrist_down_3":
+        MoveArm(3, [8, 0, 0])  # Wrist down
 
     if comm == "wrist_down":
         MoveArm(1, [8, 0, 0])  # Wrist down
