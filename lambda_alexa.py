@@ -1,4 +1,7 @@
 #Alexa in TecgCrunch Hackathon 2016
+#Lesson1:
+#AWSIoTPythonSDK only allows one connection one time, so always disconnect after one access
+
 from __future__ import print_function
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTShadowClient
 import datetime
@@ -26,7 +29,7 @@ def lambda_handler(event, context):
     if 'session' in event:
         print("event.session.application.applicationId=" + event['session']['application']['applicationId'])
         if (event['session']['application']['applicationId'] !=
-            "amzn1.ask.skill.e23e8c9e-f738-48dd-bbdb-d51978835364"):
+            "amzn1.ask.skill.aae9596c-c340-47b3-9af6-21ee130ead0d"):
             raise ValueError("Invalid Application ID")
         if event['session']['new'] and 'requestId' in event['request']:
             print("New session starts with ID: " + event['request']['requestId'])
@@ -89,7 +92,7 @@ def Welcome_response(intent, session):
     customCallback = ""
 
 	# Init Speech
-	speech_output = "Welcome to robot arm. " \
+    speech_output = "Welcome to robot arm. " \
                     "You have nothing in stock."   \
                     "Please put in or ask for help."
     reprompt_text = "Please put in new items. "
@@ -104,9 +107,9 @@ def Welcome_response(intent, session):
         if 'Item_takein' in session['attributes'] is not "":
             Item_takein = session['attributes']['Item_takein']
 			#Speech
-			speech_output = "Welcome to robot arm, " \
+            speech_output = "Welcome to robot arm, " \
                     "You have one" + Item_takein + "in your refrigerator."
-			reprompt_text = "Refrigerator Status:" \
+            reprompt_text = "Refrigerator Status:" \
                     "You have one" + Item_takein + "in your refrigerator."
 
 	# Send response back to ASK
@@ -132,7 +135,7 @@ def In_response(intent, session):
                 Item_takein = intent['slots']['Item_takein']['value'].upper()
 
     if Item_takein == "":
-        print("Warning: there is no item to take in.")
+        print("Warning: there is no item to take in!!!")
 
     # Build the speech
     speech_output = "Robot Arm is taking in " + Item_takein + ", Please wait. "
@@ -332,3 +335,37 @@ def Stop_response():
     # Send response back to ASK
     session_attributes = create_attributes(Item_takein)
     return build_response(session_attributes, build_speechlet_response(card_title, speech_output, reprompt_text, should_end_session))
+
+
+#---------------------Response create functions-------------------------------#
+def create_attributes(Item_takein):
+    return {"Item_stock": Item_takein.upper()}
+
+
+def build_speechlet_response(title, output, reprompt_text, should_end_session):
+    return {
+        'outputSpeech': {
+            'type': 'PlainText',
+            'text': output
+        },
+        'card': {
+            'type': 'Simple',
+            'title': title,
+            'content': output
+        },
+        'reprompt': {
+            'outputSpeech': {
+                'type': 'PlainText',
+                'text': reprompt_text
+            }
+        },
+        'shouldEndSession': should_end_session
+    }
+
+
+def build_response(session_attributes, speechlet_response):
+    return {
+        'version': '1.0',
+        'sessionAttributes': session_attributes,
+        'response': speechlet_response
+    }
