@@ -46,6 +46,10 @@ def perform_massage_sequence():
         time.sleep(0.5)
         i = i + 1
 
+def peform_recovery_sequence():
+    MoveArm(2.5, [64, 0, 0])  # Shoulder up
+    time.sleep(0.2)
+    MoveArm(8.4, [0, 1, 0])  # Rotate base anti-clockwise
 
 # Loop forever
 '''while True:
@@ -243,6 +247,7 @@ while True:
         payload = {'Massage': massage_value- 1 }
         res = requests.post(post_url, data=payload, headers=headers)
         perform_massage_sequence()
+        #peform_recovery_sequence()
     time.sleep(0.1)
 #pass
 
