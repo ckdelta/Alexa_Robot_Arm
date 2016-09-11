@@ -53,7 +53,7 @@ def peform_recovery_sequence():
     MoveArm(8.4, [0, 1, 0])  # Rotate base anti-clockwise
 
 # Loop forever
-'''while True:
+while True:
     comm = raw_input("Please enter another command: ")
 
     if comm == "pass":
@@ -257,7 +257,7 @@ while True:
         #perform_pass_sequence()'''
     if massage_value is 1:
         headers = {}
-        payload = {'Massage': massage_value- 1 }
+        payload = {'massage': massage_value- 1 }
         res = requests.post(post_url, data=payload, headers=headers)
         perform_massage_sequence()
         #peform_recovery_sequence()
