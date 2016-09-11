@@ -22,7 +22,7 @@ myAWSIoTMQTTShadowClient.configureCredentials(rootCAPath, privateKeyPath, certif
 # AWSIoTMQTTClient connection configuration
 myAWSIoTMQTTShadowClient.configureAutoReconnectBackoffTime(1, 32, 20)
 myAWSIoTMQTTShadowClient.configureConnectDisconnectTimeout(30)  # 30 sec
-myAWSIoTMQTTShadowClient.configureMQTTOperationTimeout(10)  # 10 sec
+myAWSIoTMQTTShadowClient.configureMQTTOperationTimeout(30)  # 10 sec
 
 #-----------------------------------lambda functions---------------------------#
 def lambda_handler(event, context):
@@ -104,8 +104,8 @@ def Welcome_response(intent, session):
 
 	# Get Session Attributes
     if 'attributes' in session:
-        if 'Item_takein' in session['attributes'] is not "":
-            Item_takein = session['attributes']['Item_takein']
+        if session['attributes']['Item_stock'] != "":
+            Item_takein = session['attributes']['Item_stock']
 			#Speech
             speech_output = "Welcome to robot arm, " \
                     "You have one" + Item_takein + "in your refrigerator."
@@ -152,7 +152,9 @@ def In_response(intent, session):
                                                 "} "\
                                     ", \"reported\": {"\
                                                     "\"Takein\": \"OFF\", "\
-                                                    "\"Takeout\": \"OFF\" "\
+                                                    "\"Takeout\": \"OFF\", "\
+                                                    "\"Massage\": \"OFF\", "\
+                                                    "\"Test\": \"OFF\" "\
                                                 "} "\
                                     "} "\
                     "}"
@@ -177,9 +179,9 @@ def Out_response(intent, session):
 
     # Item taking out from slots
     if 'slots' in intent:
-        if 'Item_takein' in intent['slots']:
-            if 'value' in intent['slots']['Item_takein']:
-                Item_takeout = intent['slots']['Item_takein']['value'].upper()
+        if 'Item_takeout' in intent['slots']:
+            if 'value' in intent['slots']['Item_takeout']:
+                Item_takeout = intent['slots']['Item_takeout']['value'].upper()
 
     # Item stored in attributes
     if 'attributes' in session:
